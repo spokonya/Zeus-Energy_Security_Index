@@ -37,6 +37,13 @@ See [docs/RepoSetup.md](docs/RepoSetup.md) for full instructions on forking and 
 
 See [docs/ImportantTips.md](docs/ImportantTips.md) for tips on hot reloading, recovering from container crashes, and working with the MySQL container (including how to update your SQL files and recreate the database).
 
+## Deployment
+
+Each team's fork is automatically deployed to the course Coolify server (`coolify.cs4535.cloud`) on every push to `main`. Apps are reachable at `team{N}.neu-in-leuven.cloud`.
+
+- Students: see [docs/StudentDeployment.md](docs/StudentDeployment.md).
+- Staff (per-team onboarding checklist): see [docs/Deployment.md](docs/Deployment.md).
+
 ## Handling User Role Access and Control
 
 This project uses a simple Role-based Access Control (RBAC) system implemented in Streamlit. The template ships with example roles (*Political Strategist*, *USAID Worker*, *System Administrator*) to illustrate the pattern — **your team will replace these with the personas specific to your project**.

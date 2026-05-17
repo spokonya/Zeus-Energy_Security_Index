@@ -1,0 +1,51 @@
+name: project-app-team-repo
+
+# Production compose file used by Coolify to deploy each team's stack.
+# Differences from docker-compose.yaml (dev):
+#   - No source-code volume mounts: code is baked into images at build time.
+#   - No WATCHPACK_POLLING (dev-only hot-reload signal).
+#   - No host port bindings on app/api/db: Coolify's Traefik reverse-proxies
+#     the configured subdomains directly to the service container ports.
+#   - No container_name (dev's fixed names would collide between teams; Coolify
+#     names containers per-stack).
+#   - hostname: web-api is preserved so existing app/src code calling
+#     http://web-api:4000 works unchanged in production.
+#   - Env vars (SECRET_KEY, MYSQL_ROOT_PASSWORD, etc.) are injected by Coolify
+#     via its Environment Variables UI; no .env file is needed in production.
+
+services:
+  app:
+    build: ./app
+    hostname: web-app
+    expose:
+      - "8501"
+    depends_on:
+      - api
+
+  api:
+    build: ./api
+    hostname: web-api
+    environment:
+      - SECRET_KEY=${SECRET_KEY}
+      - DB_USER=${DB_USER}
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_NAME=${DB_NAME}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+    expose:
+      - "4000"
+    depends_on:
+      - db
+
+  db:
+    image: mysql:9
+    hostname: db
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${DB_NAME}
+    volumes:
+      - "./database-files:/docker-entrypoint-initdb.d/:ro"
+      - "doc_mysql_data:/var/lib/mysql"
+
+volumes:
+  doc_mysql_data:

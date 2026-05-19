@@ -27,11 +27,14 @@ services:
     image: mysql:9
     # container_name: mysql_db-sandbox
     hostname: db
+    # Ephemeral database: tmpfs (RAM) at /var/lib/mysql explicitly overrides
+    # the mysql:9 image's VOLUME directive. Every recreate of the db
+    # container reseeds from database-files/*.sql. Matches the main dev
+    # compose and production behavior. To pick up SQL edits:
+    # `docker compose -f sandbox.yaml down && docker compose -f sandbox.yaml up`.
     volumes:
       - "./database-files:/docker-entrypoint-initdb.d/:ro"
-      - "mysql_data:/var/lib/mysql"
+    tmpfs:
+      - /var/lib/mysql
     ports:
       - 3201:3306
-
-volumes:
-  mysql_data:

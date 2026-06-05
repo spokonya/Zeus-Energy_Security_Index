@@ -117,14 +117,7 @@ def get_latest_winters(cursor):
 
 
 def get_model_weights(cursor):
-    cursor.execute(
-        """
-        SELECT intercept, weight_storage_at_start, weight_storage_trend_30d,
-               weight_storage_volatility
-        FROM gas_storage_model
-        WHERE model_id = 1
-        """
-    )
+    cursor.execute("SELECT * FROM gas_storage_model WHERE model_id = 1")
     weights = cursor.fetchone()
     if not weights:
         raise ValueError("No gas storage model weights in database")

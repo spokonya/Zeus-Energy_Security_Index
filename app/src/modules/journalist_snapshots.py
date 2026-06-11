@@ -13,6 +13,11 @@ from modules.zeus_api import create_snapshot, delete_snapshot, get_snapshots
 
 logger = logging.getLogger(__name__)
 
+SAVE_SNAPSHOT_HELP = (
+    "Freeze the metrics currently on screen for citation later. "
+    "Saved snapshots appear under Journalist Notes → Saved snapshots."
+)
+
 
 def _country_label(country_code):
     if not country_code:
@@ -47,11 +52,18 @@ def render_save_snapshot(
 
     label = (label or _default_label(payload))[:150]
 
-    if st.button(
-        "Save data snapshot",
-        key=button_key,
-        help="Store the metrics on screen for citation later. View saved snapshots under Journalist Notes.",
-    ):
+    btn_col, help_col = st.columns([1, 0.05], vertical_alignment="center", gap="small")
+    with btn_col:
+        clicked = st.button(
+            "Save data snapshot",
+            key=button_key,
+            use_container_width=True,
+        )
+    with help_col:
+        # Help icon only (same pattern as KPI / slider tooltips), not on the button.
+        st.markdown("\u200b", help=SAVE_SNAPSHOT_HELP)
+
+    if clicked:
         try:
             create_snapshot(
                 user_id,
@@ -121,7 +133,7 @@ def render_snapshots_library(user_id):
                     st.caption(metrics_line)
                 saved_at = snapshot.get("created_at") or ""
                 if saved_at:
-                    st.caption(f"Saved {saved_at}")
+                    st.caption(f"Saved {str(saved_at)[:10]}")
             with del_col:
                 if st.button(
                     "Delete",

@@ -1,5 +1,5 @@
 -- =============================================================
--- OPTIONAL PERSONA FEATURES — schema only (no UI wired yet)
+-- OPTIONAL PERSONA FEATURES
 -- Household: saved EU energy news articles
 -- Journalist: frozen snapshot payloads + private journalist notes
 -- =============================================================

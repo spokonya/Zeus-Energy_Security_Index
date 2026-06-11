@@ -131,7 +131,7 @@ def _render_note_context(context, *, saved_at=None):
     if metrics_line:
         st.caption(metrics_line)
     if saved_at:
-        st.caption(f"Note saved {saved_at}")
+        st.caption(f"Note saved {str(saved_at)[:10]}")
 
 
 def _load_notes(user_id, country_code=None):
@@ -243,11 +243,12 @@ def render_journalist_notes(
                                 st.rerun()
 
 
-def render_journalist_notes_library(user_id):
+def render_journalist_notes_library(user_id, *, show_title=True):
     """Full notes library with country filter — used on the Journalist Notes page."""
-    st.title("Journalist Notes")
+    if show_title:
+        st.title("Journalist Notes")
     st.write(
-        "#### Your private notebook across country snapshots, comparisons, and risk views"
+        "#### Stored notes across country snapshots, comparisons, and risk views"
     )
 
     all_notes = _load_notes(user_id)

@@ -8,6 +8,7 @@ USE Zeus;
 
 -- Mock demo users (no passwords). One row per dropdown option on Home.
 -- email, country, and language are seeded and edited on the Persona Info page.
+-- Seed data is loaded from 08_mockaroo_data.sql (runs after all schemas).
 CREATE TABLE IF NOT EXISTS users (
     user_id      INT          NOT NULL AUTO_INCREMENT,
     display_name VARCHAR(100) NOT NULL,
@@ -18,11 +19,6 @@ CREATE TABLE IF NOT EXISTS users (
     language     VARCHAR(50),
     CONSTRAINT pk_users PRIMARY KEY (user_id)
 );
-
-INSERT INTO users (display_name, persona, first_name, email, country, language) VALUES
-    ('Maria Schmidt', 'household_owner', 'Maria', 'maria.schmidt@example.com', 'Germany', 'German'),
-    ('James O''Brien', 'journalist', 'James', 'james.obrien@example.com', 'Ireland', 'English'),
-    ('Niels Becker', 'energy_trader', 'Niels', 'neils.becker@example.com', 'Germany', 'German');
 
 -- Billing preferences per household_owner user (Persona Info billing form)
 CREATE TABLE IF NOT EXISTS household_profiles (

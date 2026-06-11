@@ -187,12 +187,13 @@ Scripts in `database-files/` run in alphabetical order when MySQL initializes:
 | File | Contents |
 |------|----------|
 | `01_zeus_database.sql` | Database creation |
-| `02_zeus_core.sql` | Users and household profiles |
+| `02_zeus_core.sql` | Users and household profiles schema |
 | `03_gas_storage_schema.sql` | Gas storage tables and ML2 weights |
-| `04_zeus_persona_features.sql` | Saved articles, journalist snapshots, notes |
+| `04_zeus_persona_features.sql` | Saved articles, journalist snapshots, notes schema |
 | `05_price_prediction.sql` | ML1 weights, scaler params, price history |
 | `06_gas_storage_data.sql` | AGSI gas storage daily and winter rows |
-| `07_energy_trader_schema.sql` | Watchlist, price alerts, trade journal |
+| `07_energy_trader_schema.sql` | Watchlist, price alerts, trade journal schema |
+| `08_mockaroo_data.sql` | Seed data for users and the 7 user-linked tables (profiles, articles, snapshots, notes, watchlist, alerts, trade notes) |
 
 ## Development
 

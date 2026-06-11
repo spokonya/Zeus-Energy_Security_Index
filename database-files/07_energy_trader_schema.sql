@@ -57,28 +57,4 @@ CREATE TABLE IF NOT EXISTS trader_trade_notes (
     INDEX idx_trader_trade_notes_user_date (user_id, trade_date)
 );
 
--- Demo seed for Niels Becker (energy_trader, user_id = 3)
-INSERT INTO trader_trade_notes (
-    user_id, trade_date, country_code, direction,
-    forecast_call, note, outcome, outcome_note
-) VALUES
-    (3, '2026-04-20', 'BE', 'Long',
-     'Forecast +7% over 30 days',
-     'Went long on the projected climb into spring.',
-     'Forecast wrong', 'Prices stayed flat — scratched the trade.'),
-    (3, '2026-05-12', 'NL', 'Short',
-     'Forecast -8%, high-wind week ahead',
-     'Faded the rally expecting wind to cap prices.',
-     'Forecast correct', 'Prices fell ~6%, covered for profit.'),
-    (3, '2026-05-28', 'DE', 'Long',
-     'Forecast +11% over 30 days',
-     'Layered hedges on the steep upward price path.',
-     'Forecast correct', 'Spike materialised on a cold snap.'),
-    (3, '2026-06-02', 'FR', 'Hedge',
-     'Range-bound forecast (+1%)',
-     'Rolled hedges on schedule, no directional bet.',
-     'Pending', NULL),
-    (3, '2026-06-05', 'PL', 'Long',
-     'Forecast +6% upward drift',
-     'Small long on the upward drift.',
-     'Pending', NULL);
+-- Trade journal seed data is loaded from 08_mockaroo_data.sql.

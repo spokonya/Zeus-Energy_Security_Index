@@ -180,6 +180,23 @@ _ZEUS_CSS = """
         color: var(--zeus-text-muted) !important;
     }
 
+    /* Let metric label/value/delta text wrap fully instead of being
+       clipped with an ellipsis when it doesn't fit the box width. */
+    [data-testid="stMetricLabel"],
+    [data-testid="stMetricLabel"] > div,
+    [data-testid="stMetricLabel"] p,
+    [data-testid="stMetricValue"],
+    [data-testid="stMetricDelta"] {
+        white-space: normal !important;
+        overflow: visible !important;
+        text-overflow: clip !important;
+    }
+
+    [data-testid="stMetricLabel"] {
+        max-width: 100% !important;
+        line-height: 1.25 !important;
+    }
+
     [data-testid="stMetricDelta"] {
         font-variant-numeric: tabular-nums;
         font-weight: 600 !important;

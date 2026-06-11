@@ -193,7 +193,7 @@ elif forecast_available:
     ))
 
     fig_hybrid.update_layout(
-        title=f"{selected_country_name}",
+        title=dict(text=f"{selected_country_name}", x=0.5, xanchor="center"),
         title_font_size=20,
         height=420,
         xaxis_title="Date",
@@ -271,6 +271,7 @@ if selected_country_code:
             hovermode="closest",
             title_font_size=20,
         )
+        hist_chart.update_layout(title=dict(x=0.5, xanchor="center"))
         st.plotly_chart(hist_chart, use_container_width=True)
 
     except Exception as e:

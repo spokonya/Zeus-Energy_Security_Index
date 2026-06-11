@@ -89,7 +89,7 @@ c4.metric(
 
 # ---- Log a new trade note ---------------------------------------------------
 st.divider()
-with st.expander("➕ Log a trade note"):
+with st.expander("Log a trade note"):
     with st.form("new_note", clear_on_submit=True):
         f1, f2, f3 = st.columns(3)
         n_date = f1.date_input("Trade date", value=dt.date.today())
@@ -145,28 +145,44 @@ shown = sorted(shown, key=lambda n: n["date"], reverse=True)
 st.caption(f"Showing {len(shown)} of {len(notes)} notes.")
 
 # ---- Notes list + outcome annotation (story 4) ------------------------------
-OUTCOME_STYLE = {
-    "Forecast correct": ("✅", st.success),
-    "Forecast wrong": ("❌", st.error),
-    "Pending": ("🕓", st.info),
+# (text color, background color) for the status pill on each note.
+OUTCOME_PILL = {
+    "Forecast correct": ("#1B7F4B", "#E6F4EC"),
+    "Forecast wrong":   ("#B42318", "#FCE9E7"),
+    "Pending":          ("#5A6472", "#EEF0F3"),
 }
 
+
+def status_pill(outcome: str) -> str:
+    fg, bg = OUTCOME_PILL[outcome]
+    return (
+        f"<span style='display:inline-block;background:{bg};color:{fg};"
+        "padding:0.15rem 0.7rem;border-radius:999px;font-size:0.72rem;"
+        f"font-weight:700;letter-spacing:0.03em;text-transform:uppercase;'>"
+        f"{outcome}</span>"
+    )
+
+
 for n in shown:
-    icon, _ = OUTCOME_STYLE[n["outcome"]]
     zone_name = CODE_TO_NAME.get(n["zone"], n["zone"])
     with st.container(border=True):
-        head, badge = st.columns([4, 1])
+        head, badge = st.columns([3, 1])
         head.markdown(
             f"**{n['date']} · {zone_name} · {n['direction']}**  \n"
-            f"*Forecast acted on:* {n['forecast_call'] or '—'}"
+            f"<span style='color:#5A6472'>Forecast acted on:</span> "
+            f"{n['forecast_call'] or '—'}",
+            unsafe_allow_html=True,
         )
-        badge.markdown(f"### {icon}")
+        badge.markdown(
+            f"<div style='text-align:right'>{status_pill(n['outcome'])}</div>",
+            unsafe_allow_html=True,
+        )
 
         if n["note"]:
             st.write(n["note"])
 
         if n["outcome"] != "Pending" and n["outcome_note"]:
-            st.caption(f"Outcome: **{n['outcome']}** — {n['outcome_note']}")
+            st.caption(f"Outcome: {n['outcome']} — {n['outcome_note']}")
 
         with st.expander("Annotate outcome"):
             with st.form(f"annotate_{n['id']}"):

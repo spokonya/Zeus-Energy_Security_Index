@@ -4,7 +4,7 @@ logger = logging.getLogger(__name__)
 
 import requests
 import streamlit as st
-from modules.nav import SideBarLinks
+from modules.nav import SideBarLinks, render_persona_page_nav
 from modules.zeus_api import (
     delete_saved_article,
     get_eu_energy_news,
@@ -206,11 +206,4 @@ else:
             _render_article_card(article, saved_by_link)
 
 st.divider()
-
-nav_left, nav_right = st.columns(2)
-with nav_left:
-    if st.button("← Dashboard", use_container_width=True):
-        st.switch_page("pages/40_Household_Owner_Dashboard.py")
-with nav_right:
-    if st.button("← My Info", use_container_width=True):
-        st.switch_page("pages/41_Household_Persona_Info.py")
+render_persona_page_nav("pages/42_Household_Energy_News.py")

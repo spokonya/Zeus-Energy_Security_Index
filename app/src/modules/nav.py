@@ -114,6 +114,87 @@ def household_owner_nav():
     )
 
 
+# ---- Persona page order (matches sidebar; used for bottom-of-page nav) ------
+
+PERSONA_ROUTES = {
+    "household_owner": [
+        ("pages/40_Household_Owner_Dashboard.py", "Dashboard"),
+        ("pages/41_Household_Persona_Info.py", "My Info"),
+        ("pages/42_Household_Energy_News.py", "Energy News"),
+    ],
+    "journalist": [
+        ("pages/60_Country_Snapshot.py", "Country Snapshot"),
+        ("pages/61_Country_Comparison.py", "Country Comparison"),
+        ("pages/62_Gas_Storage_Risk.py", "Gas Storage Risk"),
+        ("pages/63_Journalist_Notes.py", "Journalist Notes"),
+    ],
+    "energy_trader": [
+        ("pages/51_Price_Forecast.py", "30-Day Price Forecast"),
+        ("pages/52_My_Markets.py", "My Markets"),
+        ("pages/53_Trade_Journal.py", "Trade Journal"),
+    ],
+}
+
+
+def render_persona_page_nav(current_page: str) -> None:
+    """Bottom-of-page prev/next nav following each persona's sidebar order.
+
+    Landing page: one forward button (primary).
+    Middle pages: back (secondary) + forward (primary).
+    Last page: back (secondary) + return to landing (primary).
+    """
+    role = st.session_state.get("role")
+    routes = PERSONA_ROUTES.get(role)
+    if not routes:
+        return
+
+    paths = [path for path, _ in routes]
+    try:
+        index = paths.index(current_page)
+    except ValueError:
+        return
+
+    prev_path, prev_label = routes[index - 1] if index > 0 else (None, None)
+    next_path, next_label = routes[index + 1] if index < len(routes) - 1 else (None, None)
+    landing_path, landing_label = routes[0]
+
+    if index == 0:
+        if next_path and st.button(
+            f"{next_label} →",
+            type="primary",
+            use_container_width=True,
+            key=f"persona_nav_fwd_{current_page}",
+        ):
+            st.switch_page(next_path)
+        return
+
+    nav_left, nav_right = st.columns(2)
+    with nav_left:
+        if prev_path and st.button(
+            f"← {prev_label}",
+            use_container_width=True,
+            key=f"persona_nav_back_{current_page}",
+        ):
+            st.switch_page(prev_path)
+
+    with nav_right:
+        if index == len(routes) - 1:
+            if st.button(
+                f"{landing_label} →",
+                type="primary",
+                use_container_width=True,
+                key=f"persona_nav_landing_{current_page}",
+            ):
+                st.switch_page(landing_path)
+        elif next_path and st.button(
+            f"{next_label} →",
+            type="primary",
+            use_container_width=True,
+            key=f"persona_nav_fwd_{current_page}",
+        ):
+            st.switch_page(next_path)
+
+
 # ---- Role: energy_trader ----------------------------------------------------
 
 def energy_trader_nav():

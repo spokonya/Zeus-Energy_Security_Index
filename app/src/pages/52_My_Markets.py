@@ -4,7 +4,7 @@ logger = logging.getLogger(__name__)
 import pandas as pd
 import plotly.express as px
 import streamlit as st
-from modules.nav import SideBarLinks
+from modules.nav import SideBarLinks, render_persona_page_nav
 from modules.theme import zeus_plotly_layout
 from modules.trader_data import (
     BIDDING_ZONES, CODE_TO_NAME, ZONE_NAMES,
@@ -193,11 +193,4 @@ for col, code in zip(metric_cols, watchlist):
                 st.rerun()
 
 st.divider()
-
-nav_left, nav_right = st.columns(2)
-with nav_left:
-    if st.button("← Price Forecast", use_container_width=True):
-        st.switch_page("pages/51_Price_Forecast.py")
-with nav_right:
-    if st.button("Trade Journal →", type="primary", use_container_width=True):
-        st.switch_page("pages/53_Trade_Journal.py")
+render_persona_page_nav("pages/52_My_Markets.py")

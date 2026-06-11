@@ -6,7 +6,7 @@ import plotly.express as px
 import requests
 import streamlit as st
 from modules.journalist_notes import render_journalist_notes, snapshot_note_context
-from modules.nav import SideBarLinks
+from modules.nav import SideBarLinks, render_persona_page_nav
 from modules.theme import zeus_plotly_layout
 from modules.zeus_api import get_storage_history, get_storage_summary
 
@@ -151,10 +151,4 @@ if user_id:
     )
     st.divider()
 
-nav_left, nav_right = st.columns(2)
-with nav_left:
-    if st.button("Gas Storage Risk →", type='primary', use_container_width=True):
-        st.switch_page('pages/62_Gas_Storage_Risk.py')
-with nav_right:
-    if st.button("Compare Countries →", use_container_width=True):
-        st.switch_page('pages/61_Country_Comparison.py')
+render_persona_page_nav("pages/60_Country_Snapshot.py")

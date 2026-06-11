@@ -3,7 +3,7 @@ logger = logging.getLogger(__name__)
 
 import plotly.express as px
 import streamlit as st
-from modules.nav import SideBarLinks
+from modules.nav import SideBarLinks, render_persona_page_nav
 from modules.theme import zeus_plotly_layout
 from modules.trader_data import (
     BIDDING_ZONES, ZONE_NAMES, fetch_forecast, forecast_summary,
@@ -112,11 +112,4 @@ st.caption(
 )
 
 st.divider()
-
-nav_left, nav_right = st.columns(2)
-with nav_left:
-    if st.button("My Markets →", type="primary", use_container_width=True):
-        st.switch_page("pages/52_My_Markets.py")
-with nav_right:
-    if st.button("Trade Journal →", use_container_width=True):
-        st.switch_page("pages/53_Trade_Journal.py")
+render_persona_page_nav("pages/51_Price_Forecast.py")

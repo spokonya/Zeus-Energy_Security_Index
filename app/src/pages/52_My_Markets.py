@@ -190,9 +190,41 @@ for i, code in enumerate(watchlist):
 zeus_plotly_layout(fig, height=320)
 st.plotly_chart(fig, use_container_width=True)
 
-# Side by side metrics + alert for each zone
+# Side by side metrics + alert for each zone — horizontally scrollable so the
+# cards keep a comfortable width instead of squishing as the watchlist grows.
 st.divider()
-metric_cols = st.columns(len(watchlist))
+st.markdown(
+    """
+    <style>
+    /* Outer zone-card row: scroll horizontally instead of wrapping/squishing. */
+    .st-key-zone_cards [data-testid="stHorizontalBlock"] {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        gap: 1rem;
+        padding-bottom: 0.75rem;
+    }
+    .st-key-zone_cards [data-testid="stHorizontalBlock"] > [data-testid="stColumn"] {
+        min-width: 300px;
+        flex: 0 0 300px;
+    }
+    /* Restore normal layout for the Set/Clear button row inside each form. */
+    .st-key-zone_cards [data-testid="stForm"] [data-testid="stHorizontalBlock"] {
+        overflow-x: visible;
+        gap: 0.5rem;
+        padding-bottom: 0;
+    }
+    .st-key-zone_cards [data-testid="stForm"] [data-testid="stHorizontalBlock"] > [data-testid="stColumn"] {
+        min-width: 0;
+        flex: 1 1 0;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+st.caption("Scroll sideways to see every watched zone →")
+zone_card_container = st.container(key="zone_cards")
+with zone_card_container:
+    metric_cols = st.columns(len(watchlist))
 for col, code in zip(metric_cols, watchlist):
     s = zone_data[code]["summary"]
     alert = alerts_by_code.get(code)

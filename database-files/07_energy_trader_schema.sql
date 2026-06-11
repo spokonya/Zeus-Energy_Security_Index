@@ -58,10 +58,6 @@ CREATE TABLE IF NOT EXISTS trader_trade_notes (
 );
 
 -- Demo seed for Niels Becker (energy_trader, user_id = 3)
-INSERT INTO trader_watchlist (user_id, country_code) VALUES
-    (3, 'NL'),
-    (3, 'DE');
-
 INSERT INTO trader_trade_notes (
     user_id, trade_date, country_code, direction,
     forecast_call, note, outcome, outcome_note

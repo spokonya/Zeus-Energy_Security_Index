@@ -3,6 +3,7 @@ logger = logging.getLogger(__name__)
 
 import pandas as pd
 import plotly.express as px
+import requests
 import streamlit as st
 from modules.nav import SideBarLinks, render_persona_page_nav
 from modules.theme import zeus_plotly_layout
@@ -10,12 +11,24 @@ from modules.trader_data import (
     BIDDING_ZONES, CODE_TO_NAME, ZONE_NAMES,
     fetch_forecast, forecast_summary,
 )
+from modules.zeus_api import (
+    delete_trader_price_alert,
+    get_trader_price_alerts,
+    get_trader_watchlist,
+    set_trader_price_alert,
+    set_trader_watchlist,
+)
 
 st.set_page_config(layout="wide")
 
 SideBarLinks()
 
 trader = st.session_state.get("first_name", "Trader")
+
+user_id = st.session_state.get("user_id")
+if not user_id:
+    st.error("No user is logged in. Return to Home and log in as an energy trader.")
+    st.stop()
 
 st.title("My Markets")
 st.write("#### The zones you're trading — the 30-day forecast, side by side")
@@ -26,15 +39,40 @@ st.write(
 )
 
 # ---- Watchlist (story 1) ----------------------------------------------------
-# Persisted in session for this demo; a production build would store the
-# watchlist per user in the database.
-if "trader_watchlist" not in st.session_state:
-    st.session_state["trader_watchlist"] = ["NL", "DE"]  # Niels trades from Amsterdam
-if "trader_alerts" not in st.session_state:
-    st.session_state["trader_alerts"] = {}  # code -> {"threshold": float, "direction": str}
+def _load_watchlist_codes():
+    try:
+        rows = get_trader_watchlist(user_id)
+    except requests.exceptions.RequestException as exc:
+        logger.warning("Could not load trader watchlist: %s", exc)
+        st.error(f"Could not load your watchlist: {exc}")
+        return None
+    return [row["country_code"] for row in rows if row.get("country_code")]
 
-current_names = [CODE_TO_NAME[c] for c in st.session_state["trader_watchlist"]
-                 if c in CODE_TO_NAME]
+
+def _load_alerts_by_code():
+    try:
+        rows = get_trader_price_alerts(user_id)
+    except requests.exceptions.RequestException as exc:
+        logger.warning("Could not load trader price alerts: %s", exc)
+        st.error(f"Could not load your price alerts: {exc}")
+        return None
+    alerts = {}
+    for row in rows:
+        code = row.get("country_code")
+        if not code:
+            continue
+        alerts[code] = {
+            "threshold": float(row["threshold"]),
+            "direction": row["direction"],
+        }
+    return alerts
+
+
+saved_codes = _load_watchlist_codes()
+if saved_codes is None:
+    st.stop()
+
+current_names = [CODE_TO_NAME[c] for c in saved_codes if c in CODE_TO_NAME]
 
 st.divider()
 st.write("##### Watchlist")
@@ -44,11 +82,23 @@ selected_names = st.multiselect(
     default=current_names,
     help="Only these zones appear below — no noise from the full EU view.",
 )
-st.session_state["trader_watchlist"] = [BIDDING_ZONES[n] for n in selected_names]
-watchlist = st.session_state["trader_watchlist"]
+watchlist = [BIDDING_ZONES[n] for n in selected_names]
+
+if set(watchlist) != set(saved_codes):
+    try:
+        set_trader_watchlist(user_id, watchlist)
+    except requests.exceptions.RequestException as exc:
+        logger.warning("Could not save trader watchlist: %s", exc)
+        st.error(f"Could not save your watchlist: {exc}")
+        st.stop()
+    st.rerun()
 
 if not watchlist:
     st.info("Add at least one bidding zone to your watchlist to see forecasts.")
+    st.stop()
+
+alerts_by_code = _load_alerts_by_code()
+if alerts_by_code is None:
     st.stop()
 
 # ---- Gather forecasts once for every watched zone ---------------------------
@@ -76,7 +126,7 @@ def _evaluate_alert(df, alert):
 
 triggered = []
 for code in watchlist:
-    alert = st.session_state["trader_alerts"].get(code)
+    alert = alerts_by_code.get(code)
     if not alert:
         continue
     fired, when, value = _evaluate_alert(zone_data[code]["df"], alert)
@@ -150,7 +200,7 @@ st.divider()
 metric_cols = st.columns(len(watchlist))
 for col, code in zip(metric_cols, watchlist):
     s = zone_data[code]["summary"]
-    alert = st.session_state["trader_alerts"].get(code)
+    alert = alerts_by_code.get(code)
     with col:
         st.write(f"**{CODE_TO_NAME[code]}**")
         st.metric(
@@ -184,13 +234,24 @@ for col, code in zip(metric_cols, watchlist):
             )
             set_col, clear_col = st.columns(2)
             if set_col.form_submit_button("Set alert", use_container_width=True):
-                st.session_state["trader_alerts"][code] = {
-                    "threshold": float(threshold), "direction": direction,
-                }
-                st.rerun()
+                try:
+                    set_trader_price_alert(
+                        user_id, code, float(threshold), direction
+                    )
+                except requests.exceptions.RequestException as exc:
+                    logger.warning("Could not save trader price alert: %s", exc)
+                    st.error(f"Could not save price alert: {exc}")
+                else:
+                    st.rerun()
             if clear_col.form_submit_button("Clear", use_container_width=True):
-                st.session_state["trader_alerts"].pop(code, None)
-                st.rerun()
+                if alert:
+                    try:
+                        delete_trader_price_alert(user_id, code)
+                    except requests.exceptions.RequestException as exc:
+                        logger.warning("Could not clear trader price alert: %s", exc)
+                        st.error(f"Could not clear price alert: {exc}")
+                    else:
+                        st.rerun()
 
 st.divider()
 render_persona_page_nav("pages/52_My_Markets.py")

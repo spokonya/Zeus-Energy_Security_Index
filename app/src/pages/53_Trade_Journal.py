@@ -30,13 +30,7 @@ DIRECTIONS = ["Long", "Short", "Hedge"]
 OUTCOMES = ["Pending", "Forecast correct", "Forecast wrong"]
 
 st.title("Trade Journal")
-st.write("#### Every decision you made against the forecast, and how it played out")
-st.write(
-    f"{trader}, log the call you made off each forecast, then come back and "
-    "annotate how it resolved. Over time that's your personal read on how much "
-    "to trust the model — by zone and by market regime."
-)
-
+st.write("#### Every decision you made against the forecast, and its results")
 
 def _parse_trade_date(value):
     if isinstance(value, dt.date) and not isinstance(value, dt.datetime):

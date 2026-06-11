@@ -162,3 +162,19 @@ def update_note(user_id, note_id, note):
 # route: DELETE /users/<user_id>/notes/<note_id>  →  notes_routes.delete_note()
 def delete_note(user_id, note_id):
     return _delete(f"/users/{user_id}/notes/{note_id}")
+
+
+# route: GET /users/<user_id>/snapshots  →  snapshots_routes.get_snapshots()
+def get_snapshots(user_id, country_code=None):
+    params = {"country_code": country_code} if country_code else None
+    return _get(f"/users/{user_id}/snapshots", params=params)
+
+
+# route: POST /users/<user_id>/snapshots  →  snapshots_routes.create_snapshot()
+def create_snapshot(user_id, snapshot):
+    return _post(f"/users/{user_id}/snapshots", snapshot)
+
+
+# route: DELETE /users/<user_id>/snapshots/<snapshot_id>  →  snapshots_routes.delete_snapshot()
+def delete_snapshot(user_id, snapshot_id):
+    return _delete(f"/users/{user_id}/snapshots/{snapshot_id}")

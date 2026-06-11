@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 
 from flask import Blueprint, jsonify, request, current_app
@@ -14,6 +14,11 @@ VALID_COUNTRY_CODES = {
 
 
 VALID_DIRECTIONS = {"above", "below"}
+VALID_TRADE_DIRECTIONS = {"Long", "Short", "Hedge"}
+VALID_OUTCOMES = {"Pending", "Forecast correct", "Forecast wrong"}
+
+MAX_FORECAST_CALL_LEN = 300
+MAX_OUTCOME_NOTE_LEN = 500
 
 
 def _user_exists(cursor, user_id):
@@ -27,6 +32,9 @@ def _serialize_row(row):
         value = item.get(field)
         if isinstance(value, datetime):
             item[field] = value.isoformat(sep=" ", timespec="seconds")
+    trade_date = item.get("trade_date")
+    if isinstance(trade_date, (date, datetime)):
+        item["trade_date"] = trade_date.isoformat()
     threshold = item.get("threshold")
     if isinstance(threshold, Decimal):
         item["threshold"] = float(threshold)
@@ -66,6 +74,45 @@ def _validate_country_code(country_code):
 def _validate_direction(value):
     direction = (value or "").strip().lower()
     return direction if direction in VALID_DIRECTIONS else None
+
+
+def _validate_trade_direction(value):
+    direction = (value or "").strip()
+    if direction == "long":
+        direction = "Long"
+    elif direction == "short":
+        direction = "Short"
+    elif direction == "hedge":
+        direction = "Hedge"
+    return direction if direction in VALID_TRADE_DIRECTIONS else None
+
+
+def _validate_outcome(value):
+    outcome = (value or "").strip()
+    return outcome if outcome in VALID_OUTCOMES else None
+
+
+def _parse_trade_date(value):
+    if value is None:
+        return None
+    if isinstance(value, date) and not isinstance(value, datetime):
+        return value
+    if isinstance(value, datetime):
+        return value.date()
+    text = str(value).strip()[:10]
+    try:
+        return datetime.strptime(text, "%Y-%m-%d").date()
+    except ValueError:
+        return None
+
+
+def _optional_text(value, max_len=None):
+    text = (value or "").strip()
+    if not text:
+        return None
+    if max_len is not None and len(text) > max_len:
+        return None
+    return text
 
 
 # zeus_api: get_trader_watchlist(user_id)
@@ -283,4 +330,207 @@ def delete_trader_price_alert(user_id, country_code):
         current_app.logger.error(
             "Database error in delete_trader_price_alert: %s", e
         )
+        return error_response(str(e))
+
+
+# zeus_api: get_trader_trade_notes(user_id)
+@trader_bp.route("/users/<int:user_id>/trade-notes", methods=["GET"])
+def get_trader_trade_notes(user_id):
+    current_app.logger.info("GET /users/%s/trade-notes", user_id)
+    try:
+        with get_db().cursor(dictionary=True) as cursor:
+            if not _user_exists(cursor, user_id):
+                return error_response("User not found", 404)
+
+            cursor.execute(
+                """
+                SELECT note_id, user_id, trade_date, country_code, direction,
+                       forecast_call, note, outcome, outcome_note,
+                       created_at, updated_at
+                FROM trader_trade_notes
+                WHERE user_id = %s
+                ORDER BY trade_date DESC, note_id DESC
+                """,
+                (user_id,),
+            )
+            rows = cursor.fetchall()
+
+        return jsonify([_serialize_row(row) for row in rows]), 200
+    except Error as e:
+        current_app.logger.error("Database error in get_trader_trade_notes: %s", e)
+        return error_response(str(e))
+
+
+# zeus_api: create_trader_trade_note(user_id, note)
+@trader_bp.route("/users/<int:user_id>/trade-notes", methods=["POST"])
+def create_trader_trade_note(user_id):
+    current_app.logger.info("POST /users/%s/trade-notes", user_id)
+    try:
+        data = request.get_json()
+        if not data:
+            return error_response("Request body is required", 400)
+
+        trade_date = _parse_trade_date(data.get("trade_date"))
+        if not trade_date:
+            return error_response("Missing or invalid field: trade_date", 400)
+
+        country_code = _validate_country_code(data.get("country_code"))
+        if not country_code:
+            return error_response("Missing or invalid field: country_code", 400)
+
+        direction = _validate_trade_direction(data.get("direction"))
+        if not direction:
+            return error_response(
+                "Missing or invalid field: direction (Long, Short, or Hedge)", 400
+            )
+
+        forecast_call = _optional_text(
+            data.get("forecast_call"), MAX_FORECAST_CALL_LEN
+        )
+        if data.get("forecast_call") and forecast_call is None:
+            return error_response(
+                f"forecast_call must be at most {MAX_FORECAST_CALL_LEN} characters",
+                400,
+            )
+
+        note = _optional_text(data.get("note"))
+
+        with get_db().cursor(dictionary=True) as cursor:
+            if not _user_exists(cursor, user_id):
+                return error_response("User not found", 404)
+
+            cursor.execute(
+                """
+                INSERT INTO trader_trade_notes (
+                    user_id, trade_date, country_code, direction,
+                    forecast_call, note, outcome
+                ) VALUES (%s, %s, %s, %s, %s, %s, 'Pending')
+                """,
+                (
+                    user_id,
+                    trade_date,
+                    country_code,
+                    direction,
+                    forecast_call,
+                    note,
+                ),
+            )
+            note_id = cursor.lastrowid
+
+            cursor.execute(
+                """
+                SELECT note_id, user_id, trade_date, country_code, direction,
+                       forecast_call, note, outcome, outcome_note,
+                       created_at, updated_at
+                FROM trader_trade_notes
+                WHERE user_id = %s AND note_id = %s
+                """,
+                (user_id, note_id),
+            )
+            row = cursor.fetchone()
+
+        get_db().commit()
+        return jsonify(_serialize_row(row)), 201
+    except Error as e:
+        current_app.logger.error("Database error in create_trader_trade_note: %s", e)
+        return error_response(str(e))
+
+
+# zeus_api: update_trader_trade_note(user_id, note_id, note)
+@trader_bp.route("/users/<int:user_id>/trade-notes/<int:note_id>", methods=["PUT"])
+def update_trader_trade_note(user_id, note_id):
+    current_app.logger.info("PUT /users/%s/trade-notes/%s", user_id, note_id)
+    try:
+        data = request.get_json()
+        if not data:
+            return error_response("Request body is required", 400)
+
+        outcome = _validate_outcome(data.get("outcome"))
+        if not outcome:
+            return error_response(
+                "Missing or invalid field: outcome", 400
+            )
+
+        outcome_note = _optional_text(
+            data.get("outcome_note"), MAX_OUTCOME_NOTE_LEN
+        )
+        if data.get("outcome_note") and outcome_note is None:
+            return error_response(
+                f"outcome_note must be at most {MAX_OUTCOME_NOTE_LEN} characters",
+                400,
+            )
+
+        with get_db().cursor(dictionary=True) as cursor:
+            if not _user_exists(cursor, user_id):
+                return error_response("User not found", 404)
+
+            cursor.execute(
+                """
+                SELECT note_id FROM trader_trade_notes
+                WHERE user_id = %s AND note_id = %s
+                """,
+                (user_id, note_id),
+            )
+            if not cursor.fetchone():
+                return error_response("Trade note not found", 404)
+
+            cursor.execute(
+                """
+                UPDATE trader_trade_notes
+                SET outcome = %s, outcome_note = %s
+                WHERE user_id = %s AND note_id = %s
+                """,
+                (outcome, outcome_note, user_id, note_id),
+            )
+
+            cursor.execute(
+                """
+                SELECT note_id, user_id, trade_date, country_code, direction,
+                       forecast_call, note, outcome, outcome_note,
+                       created_at, updated_at
+                FROM trader_trade_notes
+                WHERE user_id = %s AND note_id = %s
+                """,
+                (user_id, note_id),
+            )
+            row = cursor.fetchone()
+
+        get_db().commit()
+        return jsonify(_serialize_row(row)), 200
+    except Error as e:
+        current_app.logger.error("Database error in update_trader_trade_note: %s", e)
+        return error_response(str(e))
+
+
+# zeus_api: delete_trader_trade_note(user_id, note_id)
+@trader_bp.route("/users/<int:user_id>/trade-notes/<int:note_id>", methods=["DELETE"])
+def delete_trader_trade_note(user_id, note_id):
+    current_app.logger.info("DELETE /users/%s/trade-notes/%s", user_id, note_id)
+    try:
+        with get_db().cursor(dictionary=True) as cursor:
+            if not _user_exists(cursor, user_id):
+                return error_response("User not found", 404)
+
+            cursor.execute(
+                """
+                SELECT note_id FROM trader_trade_notes
+                WHERE user_id = %s AND note_id = %s
+                """,
+                (user_id, note_id),
+            )
+            if not cursor.fetchone():
+                return error_response("Trade note not found", 404)
+
+            cursor.execute(
+                """
+                DELETE FROM trader_trade_notes
+                WHERE user_id = %s AND note_id = %s
+                """,
+                (user_id, note_id),
+            )
+
+        get_db().commit()
+        return jsonify({"message": "Trade note deleted"}), 200
+    except Error as e:
+        current_app.logger.error("Database error in delete_trader_trade_note: %s", e)
         return error_response(str(e))

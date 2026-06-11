@@ -4,15 +4,27 @@ logger = logging.getLogger(__name__)
 import datetime as dt
 
 import pandas as pd
+import requests
 import streamlit as st
 from modules.nav import SideBarLinks, render_persona_page_nav
 from modules.trader_data import BIDDING_ZONES, CODE_TO_NAME, ZONE_NAMES
+from modules.zeus_api import (
+    create_trader_trade_note,
+    delete_trader_trade_note,
+    get_trader_trade_notes,
+    update_trader_trade_note,
+)
 
 st.set_page_config(layout="wide")
 
 SideBarLinks()
 
 trader = st.session_state.get("first_name", "Trader")
+
+user_id = st.session_state.get("user_id")
+if not user_id:
+    st.error("No user is logged in. Return to Home and log in as an energy trader.")
+    st.stop()
 
 DIRECTIONS = ["Long", "Short", "Hedge"]
 OUTCOMES = ["Pending", "Forecast correct", "Forecast wrong"]
@@ -25,37 +37,41 @@ st.write(
     "to trust the model — by zone and by market regime."
 )
 
-# Notes live in session for this demo; a production build would persist them
-# per user in the database. Seeded with a few examples so the page has history.
-if "trader_notes" not in st.session_state:
-    st.session_state["trader_notes"] = [
-        {"id": 1, "date": dt.date(2026, 4, 20), "zone": "BE", "direction": "Long",
-         "forecast_call": "Forecast +7% over 30 days",
-         "note": "Went long on the projected climb into spring.",
-         "outcome": "Forecast wrong",
-         "outcome_note": "Prices stayed flat — scratched the trade."},
-        {"id": 2, "date": dt.date(2026, 5, 12), "zone": "NL", "direction": "Short",
-         "forecast_call": "Forecast -8%, high-wind week ahead",
-         "note": "Faded the rally expecting wind to cap prices.",
-         "outcome": "Forecast correct",
-         "outcome_note": "Prices fell ~6%, covered for profit."},
-        {"id": 3, "date": dt.date(2026, 5, 28), "zone": "DE", "direction": "Long",
-         "forecast_call": "Forecast +11% over 30 days",
-         "note": "Layered hedges on the steep upward price path.",
-         "outcome": "Forecast correct",
-         "outcome_note": "Spike materialised on a cold snap."},
-        {"id": 4, "date": dt.date(2026, 6, 2), "zone": "FR", "direction": "Hedge",
-         "forecast_call": "Range-bound forecast (+1%)",
-         "note": "Rolled hedges on schedule, no directional bet.",
-         "outcome": "Pending", "outcome_note": ""},
-        {"id": 5, "date": dt.date(2026, 6, 5), "zone": "PL", "direction": "Long",
-         "forecast_call": "Forecast +6% upward drift",
-         "note": "Small long on the upward drift.",
-         "outcome": "Pending", "outcome_note": ""},
-    ]
-    st.session_state["trader_next_note_id"] = 6
 
-notes = st.session_state["trader_notes"]
+def _parse_trade_date(value):
+    if isinstance(value, dt.date) and not isinstance(value, dt.datetime):
+        return value
+    if isinstance(value, str):
+        return dt.date.fromisoformat(value[:10])
+    return value
+
+
+def _to_ui_note(row):
+    return {
+        "id": row["note_id"],
+        "date": _parse_trade_date(row["trade_date"]),
+        "zone": row["country_code"],
+        "direction": row["direction"],
+        "forecast_call": row.get("forecast_call") or "",
+        "note": row.get("note") or "",
+        "outcome": row.get("outcome") or "Pending",
+        "outcome_note": row.get("outcome_note") or "",
+    }
+
+
+def _load_notes():
+    try:
+        rows = get_trader_trade_notes(user_id)
+    except requests.exceptions.RequestException as exc:
+        logger.warning("Could not load trader trade notes: %s", exc)
+        st.error(f"Could not load trade notes: {exc}")
+        return None
+    return [_to_ui_note(row) for row in rows]
+
+
+notes = _load_notes()
+if notes is None:
+    st.stop()
 
 # ---- Track record summary ---------------------------------------------------
 annotated = [n for n in notes if n["outcome"] != "Pending"]
@@ -67,7 +83,7 @@ c1, c2, c3, c4 = st.columns(4)
 c1.metric(
     "Trades logged",
     len(notes),
-    help="Total trade notes you have saved against forecasts in this session.",
+    help="Total trade notes saved against forecasts.",
 )
 c2.metric(
     "Annotated",
@@ -103,14 +119,19 @@ with st.expander("Log a trade note"):
         n_note = st.text_area(
             "Rationale", placeholder="Why you put the trade on against the data.")
         if st.form_submit_button("Save note", type="primary"):
-            st.session_state["trader_notes"].append({
-                "id": st.session_state["trader_next_note_id"],
-                "date": n_date, "zone": BIDDING_ZONES[n_zone], "direction": n_dir,
-                "forecast_call": n_call, "note": n_note,
-                "outcome": "Pending", "outcome_note": "",
-            })
-            st.session_state["trader_next_note_id"] += 1
-            st.rerun()
+            try:
+                create_trader_trade_note(user_id, {
+                    "trade_date": n_date.isoformat(),
+                    "country_code": BIDDING_ZONES[n_zone],
+                    "direction": n_dir,
+                    "forecast_call": n_call.strip(),
+                    "note": n_note.strip(),
+                })
+            except requests.exceptions.RequestException as exc:
+                logger.warning("Could not create trader trade note: %s", exc)
+                st.error(f"Could not save trade note: {exc}")
+            else:
+                st.rerun()
 
 # ---- Filters (story 5) ------------------------------------------------------
 st.divider()
@@ -130,10 +151,13 @@ date_range = fcol2.date_input(
 )
 
 filter_codes = {BIDDING_ZONES[n] for n in zone_filter} if zone_filter else None
-if isinstance(date_range, tuple) and len(date_range) == 2:
-    start_date, end_date = date_range
+if all_dates:
+    if isinstance(date_range, tuple) and len(date_range) == 2:
+        start_date, end_date = date_range
+    else:
+        start_date, end_date = min(all_dates), max(all_dates)
 else:
-    start_date, end_date = min(all_dates), max(all_dates)
+    start_date, end_date = dt.date.today(), dt.date.today()
 
 shown = [
     n for n in notes
@@ -145,7 +169,6 @@ shown = sorted(shown, key=lambda n: n["date"], reverse=True)
 st.caption(f"Showing {len(shown)} of {len(notes)} notes.")
 
 # ---- Notes list + outcome annotation (story 4) ------------------------------
-# (text color, background color) for the status pill on each note.
 OUTCOME_PILL = {
     "Forecast correct": ("#1B7F4B", "#E6F4EC"),
     "Forecast wrong":   ("#B42318", "#FCE9E7"),
@@ -174,9 +197,18 @@ for n in shown:
             unsafe_allow_html=True,
         )
         badge.markdown(
-            f"<div style='text-align:right'>{status_pill(n['outcome'])}</div>",
+            f"<div style='text-align:right;margin-bottom:0.75rem'>"
+            f"{status_pill(n['outcome'])}</div>",
             unsafe_allow_html=True,
         )
+        if badge.button("Delete", key=f"del_trade_{n['id']}", use_container_width=True):
+            try:
+                delete_trader_trade_note(user_id, n["id"])
+            except requests.exceptions.RequestException as exc:
+                logger.warning("Could not delete trader trade note: %s", exc)
+                st.error(f"Could not delete trade note: {exc}")
+            else:
+                st.rerun()
 
         if n["note"]:
             st.write(n["note"])
@@ -197,9 +229,16 @@ for n in shown:
                     placeholder="What actually happened to price / your P&L.",
                 )
                 if st.form_submit_button("Save outcome", type="primary"):
-                    n["outcome"] = outcome
-                    n["outcome_note"] = outcome_note
-                    st.rerun()
+                    try:
+                        update_trader_trade_note(user_id, n["id"], {
+                            "outcome": outcome,
+                            "outcome_note": outcome_note.strip(),
+                        })
+                    except requests.exceptions.RequestException as exc:
+                        logger.warning("Could not update trader trade note: %s", exc)
+                        st.error(f"Could not save outcome: {exc}")
+                    else:
+                        st.rerun()
 
 if not shown:
     st.info("No trade notes match these filters.")

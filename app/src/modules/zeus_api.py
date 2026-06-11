@@ -206,3 +206,23 @@ def set_trader_price_alert(user_id, country_code, threshold, direction):
 # route: DELETE /users/<user_id>/price-alerts/<country_code>  →  trader_routes.delete_trader_price_alert()
 def delete_trader_price_alert(user_id, country_code):
     return _delete(f"/users/{user_id}/price-alerts/{country_code}")
+
+
+# route: GET /users/<user_id>/trade-notes  →  trader_routes.get_trader_trade_notes()
+def get_trader_trade_notes(user_id):
+    return _get(f"/users/{user_id}/trade-notes")
+
+
+# route: POST /users/<user_id>/trade-notes  →  trader_routes.create_trader_trade_note()
+def create_trader_trade_note(user_id, note):
+    return _post(f"/users/{user_id}/trade-notes", note)
+
+
+# route: PUT /users/<user_id>/trade-notes/<note_id>  →  trader_routes.update_trader_trade_note()
+def update_trader_trade_note(user_id, note_id, note):
+    return _put(f"/users/{user_id}/trade-notes/{note_id}", note)
+
+
+# route: DELETE /users/<user_id>/trade-notes/<note_id>  →  trader_routes.delete_trader_trade_note()
+def delete_trader_trade_note(user_id, note_id):
+    return _delete(f"/users/{user_id}/trade-notes/{note_id}")

@@ -147,7 +147,7 @@ bill_col.metric(
     "Time Until Next Bill",
     bill_display,
     bill_delta,
-    help="Days remaining until your next energy bill is due. Set this on the Persona Info page.",
+    help="Days remaining until your next energy bill is due. Set this on the My Info page.",
 )
 
 st.divider()

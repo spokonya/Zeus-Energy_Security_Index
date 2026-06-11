@@ -17,7 +17,7 @@ from modules.zeus_api import get_electricity_forecast
 logger = logging.getLogger(__name__)
 
 # The 15 bidding zones the ML1 price-forecast model supports
-# (see api/backend/routes/electricty_price_routes.py).
+# (see api/backend/routes/electricity_price_routes.py).
 BIDDING_ZONES = {
     "Austria": "AT", "Belgium": "BE", "Bulgaria": "BG", "Croatia": "HR",
     "Czech Republic": "CZ", "France": "FR", "Germany": "DE", "Hungary": "HU",

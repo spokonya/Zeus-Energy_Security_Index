@@ -13,7 +13,7 @@ The MySQL container behaves differently from the app and API containers — be a
 
 - The MySQL container has **no persistent volume** in this project. Every time a fresh `db` container is *created*, MySQL initializes itself by executing the `.sql` files in `./database-files/` in **alphabetical order** (name them accordingly — e.g. `01_schema.sql`, `02_data.sql`).
 - This matches how the app behaves in production (Coolify): every redeploy starts with a fresh database seeded from the SQL files in your repo. The seed files are the source of truth — there is no separate "production data" that drifts from what's in the repo.
-- **Implication:** rows you insert through the Streamlit UI (e.g. via the **Add NGO** page) live only inside the running container. They disappear the next time the container is recreated. If you want some data to always be present, add it to `database-files/*.sql`.
+- **Implication:** rows you insert through the Streamlit UI (e.g. saved articles, journalist notes, or trader watchlist entries) live only inside the running container until you recreate the database. To ship default data with the repo, add it to `database-files/*.sql`.
 
 ### When you change a SQL file
 

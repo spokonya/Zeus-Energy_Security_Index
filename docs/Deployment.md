@@ -103,7 +103,7 @@ In **Environment Variables**, add the following. Generate fresh values per team 
 | `SECRET_KEY`          | `openssl rand -hex 32` output (run locally, paste here)    |
 | `MYSQL_ROOT_PASSWORD` | `openssl rand -hex 24` output                              |
 | `DB_USER`             | `root`                                                     |
-| `DB_NAME`             | `ngo_db` (or the team's chosen database name)              |
+| `DB_NAME`             | `Zeus` (matches `database-files/01_zeus_database.sql`)     |
 
 Note: `DB_HOST`, `DB_PORT`, and service hostnames are hardcoded in `docker-compose.prod.yaml`; nothing else to set.
 
@@ -118,7 +118,7 @@ First deploy takes ~3–5 minutes (image build + MySQL init from `database-files
 
 > **Note on the database:** the prod stack runs MySQL with a **tmpfs (RAM-backed) data dir**, deliberately overriding the `mysql:9` image's default volume. Every redeploy starts the `db` container fresh and re-runs all `database-files/*.sql` scripts. This means the SQL committed in the team's repo is always the source of truth — there is no production state that can drift from the repo. Teams can iterate on schema by editing the SQL and pushing; no staff volume-wipe is needed.
 >
-> Implication: any data inserted through the running app (e.g. via the Streamlit "Add NGO" page) disappears on the next push. To make data "permanent," teams must add it to `database-files/*.sql`.
+> Implication: any data inserted through the running app (e.g. persona-specific saves in Streamlit) disappears on the next push. To make data "permanent," teams must add it to `database-files/*.sql`.
 
 ---
 
@@ -128,8 +128,8 @@ After the first deploy completes:
 
 - [ ] `https://<team-name>.neu-in-leuven.cloud` loads the Streamlit Home page.
 - [ ] Browser shows a valid Let's Encrypt cert (lock icon, no warning).
-- [ ] Streamlit pages that hit the API (e.g. **NGO Directory**, **API Test**) load data without errors. (This proves app ↔ api ↔ db all work over the internal network.)
-- [ ] In Coolify's **Logs** view for the `db` container, the lines `Initializing database files`, `running /docker-entrypoint-initdb.d/ngo_db.sql`, and `MySQL init process done` are all present. If init didn't run, the database will appear empty in the UI.
+- [ ] Streamlit persona pages that hit the API (e.g. **Energy News**, **Journalist Notes**, **My Markets**) load data without errors. (This proves app ↔ api ↔ db all work over the internal network.)
+- [ ] In Coolify's **Logs** view for the `db` container, MySQL init from `database-files/*.sql` completes successfully. If init didn't run, the database will appear empty in the UI.
 - [ ] If you exposed the API publicly: `curl https://<team-name>-api.neu-in-leuven.cloud/data` returns JSON.
 - [ ] Push a trivial commit to the team's `main` — Coolify should rebuild and redeploy within ~1–3 min.
 - [ ] A student on the team can log in to `coolify.cs4535.cloud`, see only their team's resource, and view logs.
@@ -152,7 +152,7 @@ Optionally archive each team's GitHub fork separately.
 ## Troubleshooting
 
 - **404 / "page not found" on the deployed URL, no HTTPS:** Traefik is up but can't route to the app. Most common cause: the domain isn't bound to the `app` service at port 8501. Edit the domain field for the `app` service to `https://<team-name>.neu-in-leuven.cloud:8501` (the `:8501` is the container port). See Step 3 above.
-- **MySQL init didn't run / database appears empty:** check the `db` container logs for the line `running /docker-entrypoint-initdb.d/ngo_db.sql`. If absent, init didn't execute — almost always because something is mounting a volume at `/var/lib/mysql` that already has data (defeating the tmpfs). The compose ships with the right config; if you've edited it, check the `tmpfs` declaration on the `db` service.
+- **MySQL init didn't run / database appears empty:** check the `db` container logs for successful execution of the scripts in `database-files/`. If init didn't run, it is almost always because something is mounting a volume at `/var/lib/mysql` that already has data (defeating the tmpfs). The compose ships with the right config; if you've edited it, check the `tmpfs` declaration on the `db` service.
 - **MySQL init errors:** check the `db` container logs for SQL syntax errors in the seed files. Fix in the repo and push; the next deploy reseeds automatically (no manual volume cleanup).
 - **Streamlit can't reach the API:** confirm the `api` service is healthy in Coolify logs. Streamlit pages call `http://web-api:4000` internally — that hostname is set via the `hostname: web-api` line in `docker-compose.prod.yaml`. If logs show DNS errors for `web-api`, that line was modified.
 - **Cert provisioning fails:** confirm the team's domain resolves (`dig <team-name>.neu-in-leuven.cloud`) before retrying. Let's Encrypt rate-limits failed validations (5/hour/hostname) and overall issuance (50/week per registered domain) — see notes below.

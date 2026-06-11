@@ -1,5 +1,6 @@
-# `assets` Directory
+# Static assets
 
-A place for some static assets for your app.  Images, etc.
+- `logo.png` — sidebar logo
+- `team/` — About page headshots
 
-TODO: Refactor assets folder into static folder per https://docs.streamlit.io/develop/concepts/configuration/serving-static-files
+Streamlit serves files here relative to `app/src/`. See [Streamlit static files](https://docs.streamlit.io/develop/concepts/configuration/serving-static-files) if you later move assets under `.streamlit/static/`.

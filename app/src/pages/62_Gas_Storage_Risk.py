@@ -6,7 +6,7 @@ import plotly.express as px
 import requests
 import streamlit as st
 from modules.journalist_notes import render_journalist_notes, risk_note_context
-from modules.nav import SideBarLinks
+from modules.nav import SideBarLinks, render_persona_page_nav
 from modules.theme import zeus_plotly_layout
 from modules.zeus_api import get_storage_winters, post_storage_risk
  
@@ -196,17 +196,7 @@ if user_id:
         ),
     )
     st.divider()
- 
-nav_left, nav_right = st.columns(2)
-with nav_left:
-    if st.button("← Back to Country Snapshot", use_container_width=True):
-        st.switch_page('pages/60_Country_Snapshot.py')
-with nav_right:
-    if st.button("Country Comparison →", type='primary', use_container_width=True):
-        st.switch_page('pages/61_Country_Comparison.py')
- 
-st.divider()
- 
+
 st.write("#### How Gas Storage Works")
  
 why_col, source_col, store_col = st.columns(3)
@@ -241,3 +231,6 @@ with store_col:
         "fast for sharp cold snaps. A reservoir's withdrawal rate depends on "
         "how full it is because the emptier it gets, the slower gas flows out."
     )
+
+st.divider()
+render_persona_page_nav("pages/62_Gas_Storage_Risk.py")

@@ -11,7 +11,7 @@ from modules.ml_countries import (
     ml_country_select_options,
     resolve_ml_country,
 )
-from modules.nav import SideBarLinks
+from modules.nav import SideBarLinks, render_persona_page_nav
 from modules.zeus_api import (
     create_household_profile,
     delete_household_profile,
@@ -322,11 +322,4 @@ if has_billing:
             st.rerun()
 
 st.divider()
-
-nav_left, nav_right = st.columns(2)
-with nav_left:
-    if st.button("← Dashboard", use_container_width=True):
-        st.switch_page("pages/40_Household_Owner_Dashboard.py")
-with nav_right:
-    if st.button("Energy News →", type="primary", use_container_width=True):
-        st.switch_page("pages/42_Household_Energy_News.py")
+render_persona_page_nav("pages/41_Household_Persona_Info.py")

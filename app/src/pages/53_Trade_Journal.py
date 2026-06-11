@@ -5,7 +5,7 @@ import datetime as dt
 
 import pandas as pd
 import streamlit as st
-from modules.nav import SideBarLinks
+from modules.nav import SideBarLinks, render_persona_page_nav
 from modules.trader_data import BIDDING_ZONES, CODE_TO_NAME, ZONE_NAMES
 
 st.set_page_config(layout="wide")
@@ -205,11 +205,4 @@ if not shown:
     st.info("No trade notes match these filters.")
 
 st.divider()
-
-nav_left, nav_right = st.columns(2)
-with nav_left:
-    if st.button("← Price Forecast", use_container_width=True):
-        st.switch_page("pages/51_Price_Forecast.py")
-with nav_right:
-    if st.button("← My Markets", use_container_width=True):
-        st.switch_page("pages/52_My_Markets.py")
+render_persona_page_nav("pages/53_Trade_Journal.py")

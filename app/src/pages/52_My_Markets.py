@@ -31,12 +31,7 @@ if not user_id:
     st.stop()
 
 st.title("My Markets")
-st.write("#### The zones you're trading — the 30-day forecast, side by side")
-st.write(
-    f"{trader}, this is your scoped view: only the bidding zones on your "
-    "watchlist, each showing the 30-day price direction. Set a threshold and "
-    "the desk flags the zone for you so you don't have to recheck it all day."
-)
+st.write("#### The zones you're trading, side by side")
 
 # ---- Watchlist (story 1) ----------------------------------------------------
 def _load_watchlist_codes():

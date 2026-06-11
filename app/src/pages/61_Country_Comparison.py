@@ -6,6 +6,7 @@ import plotly.express as px
 import requests
 import streamlit as st
 from modules.journalist_notes import comparison_note_context, render_journalist_notes
+from modules.journalist_snapshots import render_save_snapshot
 from modules.nav import SideBarLinks, render_persona_page_nav
 from modules.theme import zeus_plotly_layout
 from modules.zeus_api import compare_storage_risk
@@ -126,11 +127,19 @@ st.divider()
 
 user_id = st.session_state.get("user_id")
 if user_id:
+    comparison_payload = comparison_note_context(a_name, b_name, a, b)
+    render_save_snapshot(
+        user_id,
+        country_code=a["country"],
+        payload=comparison_payload,
+        label=f"{a_name} vs {b_name}",
+        button_key=f"snap_cmp_{a['country']}_{b['country']}",
+    )
     render_journalist_notes(
         user_id,
         page_label=f"{a_name} vs {b_name} comparison",
         country_code=None,
-        note_context=comparison_note_context(a_name, b_name, a, b),
+        note_context=comparison_payload,
     )
     st.divider()
 

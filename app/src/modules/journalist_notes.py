@@ -243,9 +243,10 @@ def render_journalist_notes(
                                 st.rerun()
 
 
-def render_journalist_notes_library(user_id):
+def render_journalist_notes_library(user_id, *, show_title=True):
     """Full notes library with country filter — used on the Journalist Notes page."""
-    st.title("Journalist Notes")
+    if show_title:
+        st.title("Journalist Notes")
     st.write(
         "#### Your private notebook across country snapshots, comparisons, and risk views"
     )

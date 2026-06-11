@@ -6,6 +6,7 @@ import plotly.express as px
 import requests
 import streamlit as st
 from modules.journalist_notes import render_journalist_notes, snapshot_note_context
+from modules.journalist_snapshots import render_save_snapshot
 from modules.nav import SideBarLinks, render_persona_page_nav
 from modules.theme import zeus_plotly_layout
 from modules.zeus_api import get_storage_history, get_storage_summary
@@ -143,11 +144,19 @@ st.divider()
 
 user_id = st.session_state.get("user_id")
 if user_id:
+    snapshot_payload = snapshot_note_context(selected_country, code, summary)
+    render_save_snapshot(
+        user_id,
+        country_code=code,
+        payload=snapshot_payload,
+        label=f"{selected_country} snapshot",
+        button_key=f"snap_snapshot_{code}",
+    )
     render_journalist_notes(
         user_id,
         page_label=f"{selected_country} snapshot",
         country_code=code,
-        note_context=snapshot_note_context(selected_country, code, summary),
+        note_context=snapshot_payload,
     )
     st.divider()
 

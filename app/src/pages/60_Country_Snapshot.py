@@ -5,6 +5,7 @@ import pandas as pd
 import plotly.express as px
 import requests
 import streamlit as st
+from modules.journalist_notes import render_journalist_notes, snapshot_note_context
 from modules.nav import SideBarLinks
 from modules.theme import zeus_plotly_layout
 from modules.zeus_api import get_storage_history, get_storage_summary
@@ -139,6 +140,16 @@ else:
     )
 
 st.divider()
+
+user_id = st.session_state.get("user_id")
+if user_id:
+    render_journalist_notes(
+        user_id,
+        page_label=f"{selected_country} snapshot",
+        country_code=code,
+        note_context=snapshot_note_context(selected_country, code, summary),
+    )
+    st.divider()
 
 nav_left, nav_right = st.columns(2)
 with nav_left:

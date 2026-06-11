@@ -5,6 +5,7 @@ import pandas as pd
 import plotly.express as px
 import requests
 import streamlit as st
+from modules.journalist_notes import render_journalist_notes, risk_note_context
 from modules.nav import SideBarLinks
 from modules.theme import zeus_plotly_layout
 from modules.zeus_api import get_storage_winters, post_storage_risk
@@ -176,6 +177,25 @@ zeus_plotly_layout(fig, height=450)
 st.plotly_chart(fig, use_container_width=True)
  
 st.divider()
+
+user_id = st.session_state.get("user_id")
+if user_id:
+    render_journalist_notes(
+        user_id,
+        page_label=f"{selected_country} storage risk",
+        country_code=code,
+        note_context=risk_note_context(
+            selected_country,
+            code,
+            risk_prob=risk_prob,
+            at_risk=at_risk,
+            storage_at_start=storage_at_start,
+            storage_trend_30d=storage_trend_30d,
+            storage_volatility=storage_volatility,
+            winter=latest.get("winter"),
+        ),
+    )
+    st.divider()
  
 nav_left, nav_right = st.columns(2)
 with nav_left:

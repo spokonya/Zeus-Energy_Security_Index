@@ -12,6 +12,7 @@ from backend.routes.notes_routes import notes_bp
 from backend.routes.snapshots_routes import snapshots_bp
 from backend.routes.storage_routes import storage_bp
 from backend.routes.electricty_price_routes import electricty_price_bp
+from backend.routes.trader_routes import trader_bp
 
 def create_app():
     app = Flask(__name__)
@@ -49,5 +50,6 @@ def create_app():
     app.register_blueprint(snapshots_bp)
     app.register_blueprint(storage_bp)
     app.register_blueprint(electricty_price_bp, url_prefix="/ml1")
+    app.register_blueprint(trader_bp)
 
     return app

@@ -3,6 +3,7 @@ logger = logging.getLogger(__name__)
 
 import pandas as pd
 import plotly.express as px
+import requests
 import streamlit as st
 from modules.nav import SideBarLinks, render_persona_page_nav
 from modules.theme import zeus_plotly_layout
@@ -10,12 +11,18 @@ from modules.trader_data import (
     BIDDING_ZONES, CODE_TO_NAME, ZONE_NAMES,
     fetch_forecast, forecast_summary,
 )
+from modules.zeus_api import get_trader_watchlist, set_trader_watchlist
 
 st.set_page_config(layout="wide")
 
 SideBarLinks()
 
 trader = st.session_state.get("first_name", "Trader")
+
+user_id = st.session_state.get("user_id")
+if not user_id:
+    st.error("No user is logged in. Return to Home and log in as an energy trader.")
+    st.stop()
 
 st.title("My Markets")
 st.write("#### The zones you're trading — the 30-day forecast, side by side")
@@ -26,15 +33,25 @@ st.write(
 )
 
 # ---- Watchlist (story 1) ----------------------------------------------------
-# Persisted in session for this demo; a production build would store the
-# watchlist per user in the database.
-if "trader_watchlist" not in st.session_state:
-    st.session_state["trader_watchlist"] = ["NL", "DE"]  # Niels trades from Amsterdam
 if "trader_alerts" not in st.session_state:
     st.session_state["trader_alerts"] = {}  # code -> {"threshold": float, "direction": str}
 
-current_names = [CODE_TO_NAME[c] for c in st.session_state["trader_watchlist"]
-                 if c in CODE_TO_NAME]
+
+def _load_watchlist_codes():
+    try:
+        rows = get_trader_watchlist(user_id)
+    except requests.exceptions.RequestException as exc:
+        logger.warning("Could not load trader watchlist: %s", exc)
+        st.error(f"Could not load your watchlist: {exc}")
+        return None
+    return [row["country_code"] for row in rows if row.get("country_code")]
+
+
+saved_codes = _load_watchlist_codes()
+if saved_codes is None:
+    st.stop()
+
+current_names = [CODE_TO_NAME[c] for c in saved_codes if c in CODE_TO_NAME]
 
 st.divider()
 st.write("##### Watchlist")
@@ -44,8 +61,16 @@ selected_names = st.multiselect(
     default=current_names,
     help="Only these zones appear below — no noise from the full EU view.",
 )
-st.session_state["trader_watchlist"] = [BIDDING_ZONES[n] for n in selected_names]
-watchlist = st.session_state["trader_watchlist"]
+watchlist = [BIDDING_ZONES[n] for n in selected_names]
+
+if set(watchlist) != set(saved_codes):
+    try:
+        set_trader_watchlist(user_id, watchlist)
+    except requests.exceptions.RequestException as exc:
+        logger.warning("Could not save trader watchlist: %s", exc)
+        st.error(f"Could not save your watchlist: {exc}")
+        st.stop()
+    st.rerun()
 
 if not watchlist:
     st.info("Add at least one bidding zone to your watchlist to see forecasts.")

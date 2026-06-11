@@ -178,3 +178,13 @@ def create_snapshot(user_id, snapshot):
 # route: DELETE /users/<user_id>/snapshots/<snapshot_id>  →  snapshots_routes.delete_snapshot()
 def delete_snapshot(user_id, snapshot_id):
     return _delete(f"/users/{user_id}/snapshots/{snapshot_id}")
+
+
+# route: GET /users/<user_id>/watchlist  →  trader_routes.get_trader_watchlist()
+def get_trader_watchlist(user_id):
+    return _get(f"/users/{user_id}/watchlist")
+
+
+# route: PUT /users/<user_id>/watchlist  →  trader_routes.set_trader_watchlist()
+def set_trader_watchlist(user_id, country_codes):
+    return _put(f"/users/{user_id}/watchlist", {"country_codes": country_codes})

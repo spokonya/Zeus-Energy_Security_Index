@@ -5,6 +5,7 @@ import pandas as pd
 import plotly.express as px
 import requests
 import streamlit as st
+from modules.journalist_notes import comparison_note_context, render_journalist_notes
 from modules.nav import SideBarLinks
 from modules.theme import zeus_plotly_layout
 from modules.zeus_api import compare_storage_risk
@@ -122,6 +123,16 @@ with st.expander("View the data behind the rankings"):
     )
 
 st.divider()
+
+user_id = st.session_state.get("user_id")
+if user_id:
+    render_journalist_notes(
+        user_id,
+        page_label=f"{a_name} vs {b_name} comparison",
+        country_code=None,
+        note_context=comparison_note_context(a_name, b_name, a, b),
+    )
+    st.divider()
 
 nav_left, nav_right = st.columns(2)
 with nav_left:

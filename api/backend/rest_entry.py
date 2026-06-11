@@ -8,6 +8,7 @@ from backend.routes.news_routes import news_bp
 from backend.routes.user_routes import user_bp
 from backend.routes.household_routes import household_bp
 from backend.routes.saved_articles_routes import saved_articles_bp
+from backend.routes.notes_routes import notes_bp
 from backend.routes.storage_routes import storage_bp
 from backend.routes.electricty_price_routes import electricty_price_bp
 
@@ -43,6 +44,7 @@ def create_app():
     app.register_blueprint(user_bp)
     app.register_blueprint(household_bp)
     app.register_blueprint(saved_articles_bp)
+    app.register_blueprint(notes_bp)
     app.register_blueprint(storage_bp)
     app.register_blueprint(electricty_price_bp, url_prefix="/ml1")
 

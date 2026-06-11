@@ -1,7 +1,7 @@
 -- =============================================================
 -- OPTIONAL PERSONA FEATURES — schema only (no UI wired yet)
 -- Household: saved EU energy news articles
--- Journalist: frozen snapshot payloads + private beat notes
+-- Journalist: frozen snapshot payloads + private journalist notes
 -- =============================================================
 
 USE Zeus;
@@ -36,12 +36,13 @@ CREATE TABLE IF NOT EXISTS snapshots (
     INDEX idx_snapshots_user (user_id)
 );
 
--- Journalist — private notes tied to a country (optional) or general beat notes
+-- Journalist — private notes tied to a country (optional) or general notes
 CREATE TABLE IF NOT EXISTS notes (
     note_id      INT           NOT NULL AUTO_INCREMENT,
     user_id      INT           NOT NULL,
     country_code CHAR(2),
     content      VARCHAR(2000) NOT NULL,
+    context      JSON,
     created_at   DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at   DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP
         ON UPDATE CURRENT_TIMESTAMP,

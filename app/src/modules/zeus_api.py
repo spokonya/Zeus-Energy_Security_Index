@@ -141,3 +141,24 @@ def save_article(user_id, article):
 # route: DELETE /users/<user_id>/saved-articles/<article_id>  →  saved_articles_routes.delete_saved_article()
 def delete_saved_article(user_id, article_id):
     return _delete(f"/users/{user_id}/saved-articles/{article_id}")
+
+
+# route: GET /users/<user_id>/notes  →  notes_routes.get_notes()
+def get_notes(user_id, country_code=None):
+    params = {"country_code": country_code} if country_code else None
+    return _get(f"/users/{user_id}/notes", params=params)
+
+
+# route: POST /users/<user_id>/notes  →  notes_routes.create_note()
+def create_note(user_id, note):
+    return _post(f"/users/{user_id}/notes", note)
+
+
+# route: PUT /users/<user_id>/notes/<note_id>  →  notes_routes.update_note()
+def update_note(user_id, note_id, note):
+    return _put(f"/users/{user_id}/notes/{note_id}", note)
+
+
+# route: DELETE /users/<user_id>/notes/<note_id>  →  notes_routes.delete_note()
+def delete_note(user_id, note_id):
+    return _delete(f"/users/{user_id}/notes/{note_id}")

@@ -86,6 +86,11 @@ def journalist_nav():
         label="Gas Storage Risk",
         icon="⚠️",
     )
+    st.sidebar.page_link(
+        "pages/63_Journalist_Notes.py",
+        label="Journalist Notes",
+        icon="📓",
+    )
 
 
 # ---- Role: household_owner --------------------------------------------------

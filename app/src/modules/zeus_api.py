@@ -188,3 +188,21 @@ def get_trader_watchlist(user_id):
 # route: PUT /users/<user_id>/watchlist  →  trader_routes.set_trader_watchlist()
 def set_trader_watchlist(user_id, country_codes):
     return _put(f"/users/{user_id}/watchlist", {"country_codes": country_codes})
+
+
+# route: GET /users/<user_id>/price-alerts  →  trader_routes.get_trader_price_alerts()
+def get_trader_price_alerts(user_id):
+    return _get(f"/users/{user_id}/price-alerts")
+
+
+# route: PUT /users/<user_id>/price-alerts/<country_code>  →  trader_routes.set_trader_price_alert()
+def set_trader_price_alert(user_id, country_code, threshold, direction):
+    return _put(
+        f"/users/{user_id}/price-alerts/{country_code}",
+        {"threshold": threshold, "direction": direction},
+    )
+
+
+# route: DELETE /users/<user_id>/price-alerts/<country_code>  →  trader_routes.delete_trader_price_alert()
+def delete_trader_price_alert(user_id, country_code):
+    return _delete(f"/users/{user_id}/price-alerts/{country_code}")

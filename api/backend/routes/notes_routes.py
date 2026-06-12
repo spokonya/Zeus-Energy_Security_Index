@@ -47,7 +47,7 @@ def _normalize_country_code(value):
 
 
 # zeus_api: get_notes(user_id, country_code=None)
-@notes_bp.route("/users/<int:user_id>/notes", methods=["GET"])
+@notes_bp.route("/<int:user_id>/notes", methods=["GET"])
 def get_notes(user_id):
     country_code = _normalize_country_code(request.args.get("country_code"))
     current_app.logger.info(
@@ -89,7 +89,7 @@ def get_notes(user_id):
 
 
 # zeus_api: create_note(user_id, note)
-@notes_bp.route("/users/<int:user_id>/notes", methods=["POST"])
+@notes_bp.route("/<int:user_id>/notes", methods=["POST"])
 def create_note(user_id):
     current_app.logger.info("POST /users/%s/notes", user_id)
     try:
@@ -134,7 +134,7 @@ def create_note(user_id):
 
 
 # zeus_api: update_note(user_id, note_id, note)
-@notes_bp.route("/users/<int:user_id>/notes/<int:note_id>", methods=["PUT"])
+@notes_bp.route("/<int:user_id>/notes/<int:note_id>", methods=["PUT"])
 def update_note(user_id, note_id):
     current_app.logger.info("PUT /users/%s/notes/%s", user_id, note_id)
     try:
@@ -180,7 +180,7 @@ def update_note(user_id, note_id):
 
 
 # zeus_api: delete_note(user_id, note_id)
-@notes_bp.route("/users/<int:user_id>/notes/<int:note_id>", methods=["DELETE"])
+@notes_bp.route("/<int:user_id>/notes/<int:note_id>", methods=["DELETE"])
 def delete_note(user_id, note_id):
     current_app.logger.info("DELETE /users/%s/notes/%s", user_id, note_id)
     try:

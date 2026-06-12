@@ -39,7 +39,7 @@ def _parse_pub_date(value):
 
 
 # zeus_api: get_saved_articles(user_id)
-@saved_articles_bp.route("/users/<int:user_id>/saved-articles", methods=["GET"])
+@saved_articles_bp.route("/<int:user_id>/saved-articles", methods=["GET"])
 def get_saved_articles(user_id):
     current_app.logger.info("GET /users/%s/saved-articles", user_id)
     try:
@@ -66,7 +66,7 @@ def get_saved_articles(user_id):
 
 
 # zeus_api: save_article(user_id, article)
-@saved_articles_bp.route("/users/<int:user_id>/saved-articles", methods=["POST"])
+@saved_articles_bp.route("/<int:user_id>/saved-articles", methods=["POST"])
 def save_article(user_id):
     current_app.logger.info("POST /users/%s/saved-articles", user_id)
     try:
@@ -119,7 +119,7 @@ def save_article(user_id):
 
 # zeus_api: delete_saved_article(user_id, article_id)
 @saved_articles_bp.route(
-    "/users/<int:user_id>/saved-articles/<int:article_id>", methods=["DELETE"]
+    "/<int:user_id>/saved-articles/<int:article_id>", methods=["DELETE"]
 )
 def delete_saved_article(user_id, article_id):
     current_app.logger.info(

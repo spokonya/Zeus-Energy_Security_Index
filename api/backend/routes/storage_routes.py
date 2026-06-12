@@ -21,10 +21,11 @@ from backend.utils import error_response
 from mysql.connector import Error
 
 storage_bp = Blueprint("storage", __name__)
+countries_storage_bp = Blueprint("countries_storage", __name__)
 
 
 # zeus_api: get_storage_history(country_code)
-@storage_bp.route("/stats/storage/history", methods=["GET"])
+@storage_bp.route("/history", methods=["GET"])
 def get_storage_history():
     current_app.logger.info("GET /stats/storage/history")
     country = request.args.get("country")
@@ -67,7 +68,7 @@ def get_storage_history():
 
 
 # zeus_api: get_storage_winters(country_code)
-@storage_bp.route("/stats/storage/winters", methods=["GET"])
+@storage_bp.route("/winters", methods=["GET"])
 def get_storage_winters():
     current_app.logger.info("GET /stats/storage/winters")
     country = request.args.get("country")
@@ -95,7 +96,7 @@ def get_storage_winters():
 
 
 # zeus_api: get_storage_summary(country_code)
-@storage_bp.route("/countries/<country_code>/storage/summary", methods=["GET"])
+@countries_storage_bp.route("/<country_code>/storage/summary", methods=["GET"])
 def get_storage_summary(country_code):
     current_app.logger.info("GET /countries/%s/storage/summary", country_code)
     code = normalize_country_code(country_code)
@@ -142,7 +143,7 @@ def get_storage_summary(country_code):
 
 
 # zeus_api: compare_storage_risk()
-@storage_bp.route("/stats/storage/risk/compare", methods=["GET"])
+@storage_bp.route("/risk/compare", methods=["GET"])
 def compare_storage_risk():
     current_app.logger.info("GET /stats/storage/risk/compare")
     try:
@@ -185,7 +186,7 @@ def compare_storage_risk():
 
 
 # zeus_api: post_storage_risk(storage_at_start, storage_trend_30d, storage_volatility)
-@storage_bp.route("/stats/storage/risk", methods=["POST"])
+@storage_bp.route("/risk", methods=["POST"])
 def post_storage_risk():
     current_app.logger.info("POST /stats/storage/risk")
     data = request.get_json() or {}

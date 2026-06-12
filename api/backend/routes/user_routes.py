@@ -11,7 +11,7 @@ user_bp = Blueprint("users", __name__)
 
 
 # zeus_api: get_users()
-@user_bp.route("/users", methods=["GET"])
+@user_bp.route("", methods=["GET"])
 def get_users():
     current_app.logger.info("GET /users")
     persona = request.args.get("persona")
@@ -45,7 +45,7 @@ def get_users():
 
 
 # zeus_api: (called directly via requests in Home.py)
-@user_bp.route("/users/<int:user_id>", methods=["GET"])
+@user_bp.route("/<int:user_id>", methods=["GET"])
 def get_user(user_id):
     current_app.logger.info("GET /users/%s", user_id)
     try:
@@ -91,7 +91,7 @@ def _validate_user_payload(data, require_all=True):
 
 
 # zeus_api: update_user(user_id, payload)
-@user_bp.route("/users/<int:user_id>", methods=["PUT"])
+@user_bp.route("/<int:user_id>", methods=["PUT"])
 def update_user(user_id):
     current_app.logger.info("PUT /users/%s", user_id)
     try:

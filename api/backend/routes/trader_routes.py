@@ -116,7 +116,7 @@ def _optional_text(value, max_len=None):
 
 
 # zeus_api: get_trader_watchlist(user_id)
-@trader_bp.route("/users/<int:user_id>/watchlist", methods=["GET"])
+@trader_bp.route("/<int:user_id>/watchlist", methods=["GET"])
 def get_trader_watchlist(user_id):
     current_app.logger.info("GET /users/%s/watchlist", user_id)
     try:
@@ -142,7 +142,7 @@ def get_trader_watchlist(user_id):
 
 
 # zeus_api: set_trader_watchlist(user_id, country_codes)
-@trader_bp.route("/users/<int:user_id>/watchlist", methods=["PUT"])
+@trader_bp.route("/<int:user_id>/watchlist", methods=["PUT"])
 def set_trader_watchlist(user_id):
     current_app.logger.info("PUT /users/%s/watchlist", user_id)
     try:
@@ -196,7 +196,7 @@ def set_trader_watchlist(user_id):
 
 
 # zeus_api: get_trader_price_alerts(user_id)
-@trader_bp.route("/users/<int:user_id>/price-alerts", methods=["GET"])
+@trader_bp.route("/<int:user_id>/price-alerts", methods=["GET"])
 def get_trader_price_alerts(user_id):
     current_app.logger.info("GET /users/%s/price-alerts", user_id)
     try:
@@ -224,7 +224,7 @@ def get_trader_price_alerts(user_id):
 
 # zeus_api: set_trader_price_alert(user_id, country_code, threshold, direction)
 @trader_bp.route(
-    "/users/<int:user_id>/price-alerts/<country_code>", methods=["PUT"]
+    "/<int:user_id>/price-alerts/<country_code>", methods=["PUT"]
 )
 def set_trader_price_alert(user_id, country_code):
     current_app.logger.info(
@@ -291,7 +291,7 @@ def set_trader_price_alert(user_id, country_code):
 
 # zeus_api: delete_trader_price_alert(user_id, country_code)
 @trader_bp.route(
-    "/users/<int:user_id>/price-alerts/<country_code>", methods=["DELETE"]
+    "/<int:user_id>/price-alerts/<country_code>", methods=["DELETE"]
 )
 def delete_trader_price_alert(user_id, country_code):
     current_app.logger.info(
@@ -334,7 +334,7 @@ def delete_trader_price_alert(user_id, country_code):
 
 
 # zeus_api: get_trader_trade_notes(user_id)
-@trader_bp.route("/users/<int:user_id>/trade-notes", methods=["GET"])
+@trader_bp.route("/<int:user_id>/trade-notes", methods=["GET"])
 def get_trader_trade_notes(user_id):
     current_app.logger.info("GET /users/%s/trade-notes", user_id)
     try:
@@ -362,7 +362,7 @@ def get_trader_trade_notes(user_id):
 
 
 # zeus_api: create_trader_trade_note(user_id, note)
-@trader_bp.route("/users/<int:user_id>/trade-notes", methods=["POST"])
+@trader_bp.route("/<int:user_id>/trade-notes", methods=["POST"])
 def create_trader_trade_note(user_id):
     current_app.logger.info("POST /users/%s/trade-notes", user_id)
     try:
@@ -437,7 +437,7 @@ def create_trader_trade_note(user_id):
 
 
 # zeus_api: update_trader_trade_note(user_id, note_id, note)
-@trader_bp.route("/users/<int:user_id>/trade-notes/<int:note_id>", methods=["PUT"])
+@trader_bp.route("/<int:user_id>/trade-notes/<int:note_id>", methods=["PUT"])
 def update_trader_trade_note(user_id, note_id):
     current_app.logger.info("PUT /users/%s/trade-notes/%s", user_id, note_id)
     try:
@@ -503,7 +503,7 @@ def update_trader_trade_note(user_id, note_id):
 
 
 # zeus_api: delete_trader_trade_note(user_id, note_id)
-@trader_bp.route("/users/<int:user_id>/trade-notes/<int:note_id>", methods=["DELETE"])
+@trader_bp.route("/<int:user_id>/trade-notes/<int:note_id>", methods=["DELETE"])
 def delete_trader_trade_note(user_id, note_id):
     current_app.logger.info("DELETE /users/%s/trade-notes/%s", user_id, note_id)
     try:

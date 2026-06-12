@@ -71,7 +71,7 @@ def _validate_profile_payload(data, require_all=True):
 
 
 # zeus_api: get_household_profile(user_id)
-@household_bp.route("/users/<int:user_id>/household-profile", methods=["GET"])
+@household_bp.route("/<int:user_id>/household-profile", methods=["GET"])
 def get_household_profile(user_id):
     current_app.logger.info("GET /users/%s/household-profile", user_id)
     try:
@@ -95,7 +95,7 @@ def get_household_profile(user_id):
 
 
 # zeus_api: create_household_profile(user_id, profile)
-@household_bp.route("/users/<int:user_id>/household-profile", methods=["POST"])
+@household_bp.route("/<int:user_id>/household-profile", methods=["POST"])
 def create_household_profile(user_id):
     current_app.logger.info("POST /users/%s/household-profile", user_id)
     try:
@@ -145,7 +145,7 @@ def create_household_profile(user_id):
 
 
 # zeus_api: update_household_profile(user_id, profile)
-@household_bp.route("/users/<int:user_id>/household-profile", methods=["PUT"])
+@household_bp.route("/<int:user_id>/household-profile", methods=["PUT"])
 def update_household_profile(user_id):
     current_app.logger.info("PUT /users/%s/household-profile", user_id)
     try:
@@ -185,7 +185,7 @@ def update_household_profile(user_id):
 
 
 # zeus_api: delete_household_profile(user_id)
-@household_bp.route("/users/<int:user_id>/household-profile", methods=["DELETE"])
+@household_bp.route("/<int:user_id>/household-profile", methods=["DELETE"])
 def delete_household_profile(user_id):
     current_app.logger.info("DELETE /users/%s/household-profile", user_id)
     try:

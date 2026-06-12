@@ -10,7 +10,7 @@ from backend.routes.household_routes import household_bp
 from backend.routes.saved_articles_routes import saved_articles_bp
 from backend.routes.notes_routes import notes_bp
 from backend.routes.snapshots_routes import snapshots_bp
-from backend.routes.storage_routes import storage_bp
+from backend.routes.storage_routes import countries_storage_bp, storage_bp
 from backend.routes.electricity_price_routes import electricity_price_bp
 from backend.routes.trader_routes import trader_bp
 
@@ -43,13 +43,14 @@ def create_app():
     # and give a url prefix to each.
     app.logger.info("create_app(): registering blueprints")
     app.register_blueprint(news_bp, url_prefix="/news")
-    app.register_blueprint(user_bp)
-    app.register_blueprint(household_bp)
-    app.register_blueprint(saved_articles_bp)
-    app.register_blueprint(notes_bp)
-    app.register_blueprint(snapshots_bp)
-    app.register_blueprint(storage_bp)
+    app.register_blueprint(user_bp, url_prefix="/users")
+    app.register_blueprint(household_bp, url_prefix="/users")
+    app.register_blueprint(saved_articles_bp, url_prefix="/users")
+    app.register_blueprint(notes_bp, url_prefix="/users")
+    app.register_blueprint(snapshots_bp, url_prefix="/users")
+    app.register_blueprint(storage_bp, url_prefix="/stats/storage")
+    app.register_blueprint(countries_storage_bp, url_prefix="/countries")
     app.register_blueprint(electricity_price_bp, url_prefix="/ml1")
-    app.register_blueprint(trader_bp)
+    app.register_blueprint(trader_bp, url_prefix="/users")
 
     return app

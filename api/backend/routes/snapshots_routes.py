@@ -44,7 +44,7 @@ def _parse_payload(value):
 
 
 # zeus_api: get_snapshots(user_id, country_code=None)
-@snapshots_bp.route("/users/<int:user_id>/snapshots", methods=["GET"])
+@snapshots_bp.route("/<int:user_id>/snapshots", methods=["GET"])
 def get_snapshots(user_id):
     country_code = _normalize_country_code(request.args.get("country_code"))
     current_app.logger.info(
@@ -84,7 +84,7 @@ def get_snapshots(user_id):
 
 
 # zeus_api: create_snapshot(user_id, snapshot)
-@snapshots_bp.route("/users/<int:user_id>/snapshots", methods=["POST"])
+@snapshots_bp.route("/<int:user_id>/snapshots", methods=["POST"])
 def create_snapshot(user_id):
     current_app.logger.info("POST /users/%s/snapshots", user_id)
     try:
@@ -128,7 +128,7 @@ def create_snapshot(user_id):
 
 # zeus_api: delete_snapshot(user_id, snapshot_id)
 @snapshots_bp.route(
-    "/users/<int:user_id>/snapshots/<int:snapshot_id>", methods=["DELETE"]
+    "/<int:user_id>/snapshots/<int:snapshot_id>", methods=["DELETE"]
 )
 def delete_snapshot(user_id, snapshot_id):
     current_app.logger.info(
